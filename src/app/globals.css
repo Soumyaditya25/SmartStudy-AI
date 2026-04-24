@@ -1,0 +1,326 @@
+@import "tailwindcss";
+
+/* ============================================
+   NEO-BRUTALIST DESIGN SYSTEM
+   SmartStudy AI — Bold, Raw, Unapologetic
+   ============================================ */
+
+@theme inline {
+  /* Core Palette */
+  --color-neo-bg: #FFFEF5;
+  --color-neo-bg-dark: #F5F0E1;
+  --color-neo-black: #1a1a1a;
+  --color-neo-white: #FFFEF5;
+
+  /* Accent Colors */
+  --color-neo-yellow: #FFE156;
+  --color-neo-pink: #FF6B9D;
+  --color-neo-blue: #4ECDC4;
+  --color-neo-coral: #FF6B6B;
+  --color-neo-purple: #A855F7;
+  --color-neo-green: #22C55E;
+  --color-neo-orange: #FF9F43;
+
+  /* Typography */
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Space Grotesk', sans-serif;
+
+  /* Shadows */
+  --shadow-neo: 6px 6px 0px #1a1a1a;
+  --shadow-neo-sm: 3px 3px 0px #1a1a1a;
+  --shadow-neo-lg: 10px 10px 0px #1a1a1a;
+  --shadow-neo-hover: 3px 3px 0px #1a1a1a;
+  --shadow-neo-pressed: 1px 1px 0px #1a1a1a;
+
+  /* Borders */
+  --border-neo: 3px solid #1a1a1a;
+  --border-neo-thick: 4px solid #1a1a1a;
+
+  /* OLD tokens mapped to new ones for transition */
+  --color-background: #FFFEF5;
+  --color-foreground: #1a1a1a;
+  --color-primary: #A855F7;
+  --color-primary-hover: #9333EA;
+}
+
+:root {
+  --background: #FFFEF5;
+  --foreground: #1a1a1a;
+}
+
+/* ===== Base Styles ===== */
+body {
+  background-color: var(--color-neo-bg);
+  background-image: 
+    linear-gradient(rgba(26, 26, 26, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 26, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: var(--color-neo-black);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Neo-Brutalist Utility Classes ===== */
+
+/* Card */
+.neo-card {
+  background: var(--color-neo-bg);
+  border: 3px solid var(--color-neo-black);
+  box-shadow: 6px 6px 0px var(--color-neo-black);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.neo-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px var(--color-neo-black);
+}
+
+.neo-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-neo-black);
+}
+
+/* Button */
+.neo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 3px solid var(--color-neo-black);
+  box-shadow: 4px 4px 0px var(--color-neo-black);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  text-decoration: none;
+}
+
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--color-neo-black);
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--color-neo-black);
+}
+
+.neo-btn-yellow {
+  background: var(--color-neo-yellow);
+  color: var(--color-neo-black);
+}
+
+.neo-btn-pink {
+  background: var(--color-neo-pink);
+  color: var(--color-neo-black);
+}
+
+.neo-btn-blue {
+  background: var(--color-neo-blue);
+  color: var(--color-neo-black);
+}
+
+.neo-btn-coral {
+  background: var(--color-neo-coral);
+  color: var(--color-neo-black);
+}
+
+.neo-btn-black {
+  background: var(--color-neo-black);
+  color: var(--color-neo-bg);
+}
+
+.neo-btn-white {
+  background: var(--color-neo-bg);
+  color: var(--color-neo-black);
+}
+
+.neo-btn-purple {
+  background: var(--color-neo-purple);
+  color: white;
+}
+
+/* Input */
+.neo-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  background: var(--color-neo-bg);
+  border: 3px solid var(--color-neo-black);
+  box-shadow: 3px 3px 0px var(--color-neo-black);
+  outline: none;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.neo-input:focus {
+  box-shadow: 5px 5px 0px var(--color-neo-purple);
+  border-color: var(--color-neo-purple);
+}
+
+.neo-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* Badge */
+.neo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 2px solid var(--color-neo-black);
+  box-shadow: 2px 2px 0px var(--color-neo-black);
+}
+
+.neo-badge-yellow { background: var(--color-neo-yellow); }
+.neo-badge-pink { background: var(--color-neo-pink); }
+.neo-badge-blue { background: var(--color-neo-blue); }
+.neo-badge-green { background: var(--color-neo-green); }
+.neo-badge-coral { background: var(--color-neo-coral); }
+
+/* Tag */
+.neo-tag {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border: 2px solid var(--color-neo-black);
+  background: var(--color-neo-bg);
+}
+
+/* Divider */
+.neo-divider {
+  border: none;
+  border-top: 3px solid var(--color-neo-black);
+  margin: 0;
+}
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-neo-bg);
+  border-left: 3px solid var(--color-neo-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neo-black);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
+
+/* ===== Neo-Brutalist Animations ===== */
+@keyframes neo-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes neo-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+@keyframes neo-pulse-border {
+  0%, 100% { border-color: var(--color-neo-black); }
+  50% { border-color: var(--color-neo-purple); }
+}
+
+@keyframes neo-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.neo-float { animation: neo-float 3s ease-in-out infinite; }
+.neo-shake { animation: neo-shake 0.3s ease-in-out; }
+
+/* ===== Prose overrides for markdown ===== */
+.prose {
+  color: var(--color-neo-black);
+}
+
+.prose h1, .prose h2, .prose h3 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  color: var(--color-neo-black);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  background: var(--color-neo-yellow);
+  padding: 0.125rem 0.375rem;
+  border: 2px solid var(--color-neo-black);
+  font-size: 0.875em;
+}
+
+.prose pre {
+  background: var(--color-neo-black);
+  color: var(--color-neo-bg);
+  border: 3px solid var(--color-neo-black);
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+  font-family: var(--font-mono);
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--color-neo-purple);
+  background: var(--color-neo-bg-dark);
+  padding: 1rem;
+  font-style: italic;
+}
+
+.prose a {
+  color: var(--color-neo-purple);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.prose strong {
+  font-weight: 800;
+}
+
+/* ===== Selection ===== */
+::selection {
+  background: var(--color-neo-yellow);
+  color: var(--color-neo-black);
+}
+
+/* ===== Patterns & Textures ===== */
+.neo-dots {
+  background-image: radial-gradient(circle, var(--color-neo-black) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.neo-lines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 19px,
+    var(--color-neo-black) 19px,
+    var(--color-neo-black) 20px
+  );
+}
+
+.neo-grid {
+  background-image: 
+    linear-gradient(rgba(26, 26, 26, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 26, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

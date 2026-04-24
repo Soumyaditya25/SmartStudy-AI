@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  levelPref     String    @default("intermediate") // beginner, intermediate, advanced
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      AuthSession[]
+
+  documents     Document[]
+  studySessions StudySession[]
+  practiceQs    PracticeQuestion[]
+  chunks        Chunk[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model AuthSession {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Document {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  status        String    @default("processing") // upload, processing, ready, failed
+  storagePath   String    // S3 or local path representing where the file is physically stored
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  practiceQs    PracticeQuestion[]
+  chunks        Chunk[]
+  
+  @@index([userId])
+}
+
+model Chunk {
+  id         String   @id @default(cuid())
+  documentId String
+  userId     String
+  page       Int      @default(1)
+  chunkIndex Int
+  content    String
+  embedding  String   // Stored as JSON string [number, number, ...]
+  createdAt  DateTime @default(now())
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([userId])
+}
+
+model StudySession {
+  id            String    @id @default(cuid())
+  userId        String
+  title         String    @default("New Session")
+  turns         String    // Stored as JSON string to hold Q/A pairs and source metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PracticeQuestion {
+  id            String    @id @default(cuid())
+  userId        String
+  documentId    String
+  difficulty    String    // beginner, intermediate, advanced
+  question      String
+  answer        String
+  solutionSteps String    // Stored as JSON string or longtext
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([documentId])
+}
