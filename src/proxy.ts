@@ -36,6 +36,3 @@ export const config = {
         "/auth/:path*",
     ],
 };
-
-// Force Node.js runtime - Edge doesn't support Prisma/SQLite
-export const runtime = 'nodejs';
