@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "npx tsx prisma/seed.ts"
+    "seed": "npx tsx prisma/seed.ts",
+    "migrate:deploy": "npx prisma migrate deploy",
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.60",
@@ -16,18 +18,18 @@
     "@auth/prisma-adapter": "^2.11.1",
     "@google/generative-ai": "^0.24.1",
     "@openrouter/ai-sdk-provider": "^2.8.0",
-    "@prisma/adapter-better-sqlite3": "^7.7.0",
+    "@prisma/adapter-pg": "^7.8.0",
     "@types/pdf-parse": "^1.1.5",
     "@xenova/transformers": "^2.17.2",
     "ai": "^6.0.153",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.8.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
     "pdf-parse": "^2.4.5",
     "pdf2json": "^4.0.3",
+    "pg": "^8.20.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0"
@@ -35,8 +37,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.4.1",

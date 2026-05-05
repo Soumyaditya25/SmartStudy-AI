@@ -1,12 +1,20 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
 
 const prismaClientSingleton = () => {
-  const url = process.env.DATABASE_URL || 'file:./dev.db'
-  // Prisma 7 adapter-better-sqlite3 constructor takes a config object with url
-  const adapter = new PrismaBetterSqlite3({
-    url: url
+  const connectionString = process.env.DATABASE_URL
+  if (!connectionString) {
+    throw new Error('DATABASE_URL environment variable is not set')
+  }
+  // Railway PostgreSQL connections need SSL in production
+  const pool = new Pool({
+    connectionString,
+    ssl: process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: false }
+      : false,
   })
+  const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }
 

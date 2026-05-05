@@ -34,9 +34,11 @@ yarn-error.log*
 .env*
 !.env.example
 
-# database
+# database files (SQLite - only for local dev)
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 
 # uploads
 /public/uploads/*
@@ -44,6 +46,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# railway
+.railway
 
 # typescript
 *.tsbuildinfo

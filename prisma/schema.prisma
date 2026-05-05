@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -69,7 +69,7 @@ model Document {
   userId        String
   name          String
   status        String    @default("processing") // upload, processing, ready, failed
-  storagePath   String    // S3 or local path representing where the file is physically stored
+  storagePath   String    // local path or cloud path where the file is stored
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -117,7 +117,7 @@ model PracticeQuestion {
   difficulty    String    // beginner, intermediate, advanced
   question      String
   answer        String
-  solutionSteps String    // Stored as JSON string or longtext
+  solutionSteps String    // Stored as markdown string
   createdAt     DateTime  @default(now())
 
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
