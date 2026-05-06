@@ -14,7 +14,9 @@ import {
     Target,
     Zap,
     AlertCircle,
-    Brain
+    Brain,
+    BookOpen,
+    Upload
 } from "lucide-react";
 import Link from "next/link";
 import { ExportButton } from "@/components/ExportButton";
@@ -102,12 +104,14 @@ export default function QuizPage() {
         return options.sort(() => Math.random() - 0.5);
     };
 
-    const startQuiz = () => {
+    const startQuiz = async () => {
         setQuizState("running");
         setCurrentIndex(0);
         setQuizResults([]);
         setTimeLeft(quizConfig.timePerQuestion);
-        fetchQuestions();
+        setLoading(true);
+        await fetchQuestions();
+        setLoading(false);
     };
 
     const handleAnswerSelect = (answer: string) => {
@@ -190,12 +194,39 @@ export default function QuizPage() {
         return score + Math.round((basePoints + timeBonus) * difficultyMult);
     }, 0);
 
-    if (loading && quizState === "running") {
+    // Loading state
+    if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-screen pt-24 flex items-center justify-center">
                 <div className="neo-card p-8 text-center">
                     <Brain className="w-12 h-12 animate-pulse text-neo-purple mx-auto mb-4" />
                     <p className="font-bold">Loading Quiz...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // No questions available state
+    if (quizState === "running" && questions.length === 0) {
+        return (
+            <div className="min-h-screen pt-24 pb-12 px-4">
+                <div className="max-w-2xl mx-auto">
+                    <div className="neo-card p-8 text-center">
+                        <BookOpen className="w-16 h-16 mx-auto text-neo-purple mb-4" />
+                        <h1 className="text-2xl font-bold mb-4">No Questions Available</h1>
+                        <p className="text-neo-black/70 mb-6">
+                            Upload documents and generate practice questions to start a quiz.
+                        </p>
+                        <div className="flex gap-4 justify-center">
+                            <Link href="/dashboard" className="neo-btn neo-btn-purple">
+                                <Upload className="w-4 h-4" />
+                                Upload Documents
+                            </Link>
+                            <button onClick={() => setQuizState("idle")} className="neo-btn neo-btn-white">
+                                Go Back
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         );

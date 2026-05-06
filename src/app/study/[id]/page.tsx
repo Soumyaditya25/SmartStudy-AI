@@ -169,12 +169,12 @@ export default function StudySession({ params }: { params: Promise<{ id: string 
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col h-full relative">
                 {/* Header */}
-                <header className="h-auto min-h-[64px] flex flex-wrap items-center justify-between px-4 md:px-6 py-3 gap-3 sticky top-0 z-10 bg-neo-bg"
-                    style={{ borderBottom: '3px solid #1a1a1a' }}
+                <header className="h-auto flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between px-4 md:px-6 py-3 gap-3 sticky top-0 z-10 bg-neo-bg border-b-[3px] border-neo-black"
                 >
                     <div className="flex items-center gap-3">
-                        <Link href="/dashboard" className="w-8 h-8 flex items-center justify-center hover:bg-neo-bg-dark transition-colors"
-                            style={{ border: '2px solid #1a1a1a' }}
+                        <Link 
+                            href="/dashboard" 
+                            className="w-8 h-8 flex items-center justify-center hover:bg-neo-bg-dark transition-colors border-[2px] border-neo-black"
                         >
                             <ArrowLeft className="w-4 h-4" />
                         </Link>
@@ -183,12 +183,11 @@ export default function StudySession({ params }: { params: Promise<{ id: string 
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
                         <select
                             value={selectedDocId}
                             onChange={(e) => setSelectedDocId(e.target.value)}
-                            className="neo-input py-1.5 px-3 text-xs font-bold w-40"
-                            style={{ boxShadow: '2px 2px 0px #1a1a1a' }}
+                            className="neo-input py-1.5 px-3 text-xs font-bold w-full sm:w-40"
                         >
                             <option value="">All Documents</option>
                             {documents.map(doc => (
@@ -196,16 +195,17 @@ export default function StudySession({ params }: { params: Promise<{ id: string 
                             ))}
                         </select>
 
-                        <div className="flex" style={{ border: '2px solid #1a1a1a' }}>
-                            {['beginner', 'intermediate', 'advanced'].map(lvl => (
+                        <div className="flex border-[2px] border-neo-black">
+                            {['beginner', 'intermediate', 'advanced'].map((lvl, idx) => (
                                 <button
                                     key={lvl}
                                     onClick={() => setLevel(lvl)}
-                                    className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${level === lvl
+                                    className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all border-neo-black ${
+                                        idx < 2 ? 'border-r-[2px]' : ''
+                                    } ${level === lvl
                                         ? "bg-neo-purple text-white"
                                         : "bg-neo-bg text-neo-black/50 hover:bg-neo-bg-dark"
-                                        }`}
-                                    style={{ borderRight: lvl !== 'advanced' ? '2px solid #1a1a1a' : 'none' }}
+                                    }`}
                                 >
                                     {lvl.slice(0, 3)}
                                 </button>
@@ -215,8 +215,7 @@ export default function StudySession({ params }: { params: Promise<{ id: string 
                         <button
                             onClick={handleGeneratePractice}
                             disabled={practiceLoading}
-                            className="neo-btn neo-btn-yellow text-[10px] py-1.5 px-3 disabled:opacity-50"
-                            style={{ boxShadow: '2px 2px 0px #1a1a1a' }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neo-yellow text-neo-black font-bold text-[10px] uppercase tracking-wider border-[2px] border-neo-black shadow-[2px_2px_0px_0px_#1a1a1a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#1a1a1a] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {practiceLoading ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

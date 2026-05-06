@@ -168,16 +168,25 @@ export default function DashboardPage() {
                     <h1 className="text-3xl font-extrabold mb-1 tracking-tight">Dashboard</h1>
                     <p className="text-neo-black/50 font-medium">Upload documents and start studying.</p>
                 </div>
-                <div className="flex gap-2 flex-wrap">
-                    <Link href="/quiz" className="neo-btn neo-btn-coral text-xs whitespace-nowrap">
+                <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+                    <Link 
+                        href="/quiz" 
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-neo-coral text-neo-black font-bold text-xs uppercase tracking-wider border-[3px] border-neo-black shadow-[3px_3px_0px_0px_#1a1a1a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_#1a1a1a] transition-all whitespace-nowrap"
+                    >
                         <Trophy className="w-4 h-4" />
                         Quiz
                     </Link>
-                    <Link href="/flashcards" className="neo-btn neo-btn-yellow text-xs whitespace-nowrap">
+                    <Link 
+                        href="/flashcards" 
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-neo-yellow text-neo-black font-bold text-xs uppercase tracking-wider border-[3px] border-neo-black shadow-[3px_3px_0px_0px_#1a1a1a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_#1a1a1a] transition-all whitespace-nowrap"
+                    >
                         <Layers className="w-4 h-4" />
                         Flashcards
                     </Link>
-                    <button onClick={handleNewChat} className="neo-btn neo-btn-purple text-xs whitespace-nowrap">
+                    <button 
+                        onClick={handleNewChat} 
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-neo-purple text-white font-bold text-xs uppercase tracking-wider border-[3px] border-neo-black shadow-[3px_3px_0px_0px_#1a1a1a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_#1a1a1a] transition-all whitespace-nowrap"
+                    >
                         <Plus className="w-4 h-4" />
                         New Chat
                     </button>
