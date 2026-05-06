@@ -183,13 +183,6 @@ export default function DashboardPage() {
                         <Layers className="w-4 h-4" />
                         Flashcards
                     </Link>
-                    <button 
-                        onClick={handleNewChat} 
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-neo-purple text-white font-bold text-xs uppercase tracking-wider border-[3px] border-neo-black shadow-[3px_3px_0px_0px_#1a1a1a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_#1a1a1a] transition-all whitespace-nowrap"
-                    >
-                        <Plus className="w-4 h-4" />
-                        New Chat
-                    </button>
                 </div>
             </header>
 

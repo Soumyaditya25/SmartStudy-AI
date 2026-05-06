@@ -190,8 +190,13 @@ export default function FlashcardsPage() {
                     <div className="neo-card p-8 text-center">
                         <BookOpen className="w-16 h-16 mx-auto text-neo-purple mb-4" />
                         <h1 className="text-2xl font-bold mb-4">No Flashcards Yet</h1>
-                        <p className="text-neo-black/70 mb-6">
-                            Upload documents and generate practice questions to create flashcards.
+                        <p className="text-neo-black/70 mb-2">
+                            You need to generate practice questions first.
+                        </p>
+                        <p className="text-sm text-neo-black/50 mb-6">
+                            1. Go to Dashboard → Click "Study" on a document<br/>
+                            2. Click "Practice" button to generate questions<br/>
+                            3. Then return here to review flashcards
                         </p>
                         <Link href="/dashboard" className="neo-btn neo-btn-purple">
                             Go to Dashboard

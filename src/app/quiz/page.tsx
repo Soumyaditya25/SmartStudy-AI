@@ -85,13 +85,30 @@ export default function QuizPage() {
                     return { ...q, options };
                 });
                 setQuestions(quizQuestions);
+            } else {
+                console.error("Failed to fetch questions:", res.status);
+                setQuestions([]);
             }
         } catch (error) {
             console.error("Failed to fetch questions:", error);
-        } finally {
-            setLoading(false);
+            setQuestions([]);
         }
     };
+
+    // Initial load to check if questions exist
+    useEffect(() => {
+        if (status === "authenticated") {
+            fetch(`/api/flashcards?limit=1`)
+                .then(res => res.ok ? res.json() : { flashcards: [] })
+                .then(data => {
+                    if (!data.flashcards || data.flashcards.length === 0) {
+                        setQuestions([]);
+                    }
+                })
+                .catch(() => setQuestions([]))
+                .finally(() => setLoading(false));
+        }
+    }, [status]);
 
     const generateOptions = (correctAnswer: string, allQuestions: QuizQuestion[]): string[] => {
         const options = [correctAnswer];
@@ -111,7 +128,8 @@ export default function QuizPage() {
         setTimeLeft(quizConfig.timePerQuestion);
         setLoading(true);
         await fetchQuestions();
-        setLoading(false);
+        // Small delay to ensure state updates
+        setTimeout(() => setLoading(false), 100);
     };
 
     const handleAnswerSelect = (answer: string) => {
@@ -214,13 +232,18 @@ export default function QuizPage() {
                     <div className="neo-card p-8 text-center">
                         <BookOpen className="w-16 h-16 mx-auto text-neo-purple mb-4" />
                         <h1 className="text-2xl font-bold mb-4">No Questions Available</h1>
-                        <p className="text-neo-black/70 mb-6">
-                            Upload documents and generate practice questions to start a quiz.
+                        <p className="text-neo-black/70 mb-2">
+                            You need to generate practice questions first.
+                        </p>
+                        <p className="text-sm text-neo-black/50 mb-6">
+                            1. Go to Dashboard → Click "Study" on a document<br/>
+                            2. Click "Practice" button to generate questions<br/>
+                            3. Then return here to take the quiz
                         </p>
                         <div className="flex gap-4 justify-center">
                             <Link href="/dashboard" className="neo-btn neo-btn-purple">
                                 <Upload className="w-4 h-4" />
-                                Upload Documents
+                                Go to Dashboard
                             </Link>
                             <button onClick={() => setQuizState("idle")} className="neo-btn neo-btn-white">
                                 Go Back
