@@ -9,8 +9,11 @@ export function Navbar() {
     const isAuthenticated = status === 'authenticated';
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-neo-bg"
+        <nav 
+            className="fixed top-0 left-0 right-0 z-50 bg-neo-bg"
             style={{ borderBottom: '3px solid #1a1a1a' }}
+            role="navigation"
+            aria-label="Main navigation"
         >
             <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2.5 group">
@@ -50,11 +53,12 @@ export function Navbar() {
                             </div>
                             <button
                                 onClick={() => signOut({ callbackUrl: '/' })}
-                                className="w-8 h-8 flex items-center justify-center hover:bg-neo-coral transition-colors"
+                                className="w-8 h-8 flex items-center justify-center hover:bg-neo-coral transition-colors focus:outline-none focus:ring-2 focus:ring-neo-purple focus:ring-offset-2"
                                 style={{ border: '2px solid #1a1a1a' }}
                                 title="Sign out"
+                                aria-label="Sign out of your account"
                             >
-                                <LogOut className="w-4 h-4" />
+                                <LogOut className="w-4 h-4" aria-hidden="true" />
                             </button>
                         </>
                     ) : (

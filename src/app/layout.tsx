@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { Navbar } from "@/components/Navbar";
+import { SkipLink } from "@/components/SkipLink";
+import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
+import { TextSelectionTooltip } from "@/components/TextSelectionTooltip";
 
 export const metadata: Metadata = {
   title: "SmartStudy AI — Your AI Study Companion",
@@ -25,7 +29,15 @@ export default function RootLayout({
         />
       </head>
       <body style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <SkipLink />
+          <Navbar />
+          <KeyboardShortcuts />
+          <TextSelectionTooltip />
+          <main id="main-content" tabIndex={-1}>
+            {children}
+          </main>
+        </Providers>
       </body>
     </html>
   );

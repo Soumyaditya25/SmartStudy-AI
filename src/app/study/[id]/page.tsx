@@ -6,6 +6,7 @@ import { Send, ArrowLeft, User, Sparkles, BookOpen, Loader2, X, ChevronDown, Che
 import Link from "next/link";
 import ReactMarkdown from 'react-markdown';
 import { useSearchParams } from "next/navigation";
+import { ExportButton } from "@/components/ExportButton";
 
 interface PracticeQuestion {
     id: string;
@@ -224,6 +225,17 @@ export default function StudySession({ params }: { params: Promise<{ id: string 
                             )}
                             Practice
                         </button>
+
+                        {messages.length > 0 && (
+                            <ExportButton 
+                                data={{
+                                    type: "session",
+                                    sessionId: id,
+                                    title: "Study Session",
+                                    turns: messages,
+                                }}
+                            />
+                        )}
                     </div>
                 </header>
 

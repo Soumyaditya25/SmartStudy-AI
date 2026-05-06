@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, FileText, Search, Plus, Trash2, MessageSquare, Clock, CheckCircle, AlertTriangle, Loader2, X } from "lucide-react";
+import { UploadCloud, FileText, Search, Plus, Trash2, MessageSquare, Clock, CheckCircle, AlertTriangle, Loader2, X, Layers, Trophy } from "lucide-react";
+import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
@@ -158,7 +159,7 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="p-6 md:p-8 max-w-6xl mx-auto h-full flex flex-col"
+        <div className="pt-24 p-6 md:p-8 max-w-6xl mx-auto min-h-screen flex flex-col"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
             {/* Header */}
@@ -167,10 +168,20 @@ export default function DashboardPage() {
                     <h1 className="text-3xl font-extrabold mb-1 tracking-tight">Dashboard</h1>
                     <p className="text-neo-black/50 font-medium">Upload documents and start studying.</p>
                 </div>
-                <button onClick={handleNewChat} className="neo-btn neo-btn-purple text-xs">
-                    <Plus className="w-4 h-4" />
-                    New Chat
-                </button>
+                <div className="flex gap-2 flex-wrap">
+                    <Link href="/quiz" className="neo-btn neo-btn-coral text-xs whitespace-nowrap">
+                        <Trophy className="w-4 h-4" />
+                        Quiz
+                    </Link>
+                    <Link href="/flashcards" className="neo-btn neo-btn-yellow text-xs whitespace-nowrap">
+                        <Layers className="w-4 h-4" />
+                        Flashcards
+                    </Link>
+                    <button onClick={handleNewChat} className="neo-btn neo-btn-purple text-xs whitespace-nowrap">
+                        <Plus className="w-4 h-4" />
+                        New Chat
+                    </button>
+                </div>
             </header>
 
             {/* Upload Zone */}
