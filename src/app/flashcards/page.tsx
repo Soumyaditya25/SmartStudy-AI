@@ -13,7 +13,10 @@ import {
     Clock,
     BookOpen,
     Zap,
-    BarChart3
+    BarChart3,
+    Sparkles,
+    Loader2,
+    Upload
 } from "lucide-react";
 import Link from "next/link";
 import { ExportButton } from "@/components/ExportButton";
@@ -83,6 +86,8 @@ export default function FlashcardsPage() {
         streak: 0,
     });
     const [showStats, setShowStats] = useState(false);
+    const [documents, setDocuments] = useState<{id: string, name: string}[]>([]);
+    const [generating, setGenerating] = useState(false);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -91,8 +96,44 @@ export default function FlashcardsPage() {
         }
         if (status === "authenticated") {
             fetchFlashcards();
+            fetchDocuments();
         }
     }, [status, router]);
+
+    const fetchDocuments = async () => {
+        try {
+            const res = await fetch('/api/files');
+            if (res.ok) {
+                const data = await res.json();
+                setDocuments(data.documents || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch documents:", error);
+        }
+    };
+
+    const generateQuestions = async () => {
+        if (documents.length === 0) return;
+        setGenerating(true);
+        try {
+            const doc = documents[0];
+            const res = await fetch('/api/practice/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    documentId: doc.id, 
+                    count: 10 
+                }),
+            });
+            if (res.ok) {
+                await fetchFlashcards();
+            }
+        } catch (error) {
+            console.error("Failed to generate questions:", error);
+        } finally {
+            setGenerating(false);
+        }
+    };
 
     const fetchFlashcards = async () => {
         try {
@@ -174,33 +215,59 @@ export default function FlashcardsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="neo-card p-8">
-                    <Brain className="w-8 h-8 animate-pulse text-neo-purple" />
-                    <p className="mt-4 font-bold">Loading flashcards...</p>
+            <div className="min-h-screen pt-24 flex items-center justify-center">
+                <div className="neo-card p-8 text-center">
+                    <Brain className="w-8 h-8 animate-pulse text-neo-purple mx-auto mb-4" />
+                    <p className="font-bold">Loading flashcards...</p>
                 </div>
             </div>
         );
     }
 
     if (flashcards.length === 0) {
+        // No documents uploaded
+        if (documents.length === 0) {
+            return (
+                <div className="min-h-screen pt-24 pb-12 px-4">
+                    <div className="max-w-2xl mx-auto">
+                        <div className="neo-card p-8 text-center">
+                            <BookOpen className="w-16 h-16 mx-auto text-neo-purple mb-4" />
+                            <h1 className="text-2xl font-bold mb-4">No Documents Uploaded</h1>
+                            <p className="text-neo-black/70 mb-6">
+                                Upload documents to generate flashcards.
+                            </p>
+                            <Link href="/dashboard" className="neo-btn neo-btn-purple">
+                                <Upload className="w-4 h-4" />
+                                Go to Dashboard
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // No questions generated yet
         return (
             <div className="min-h-screen pt-24 pb-12 px-4">
                 <div className="max-w-2xl mx-auto">
                     <div className="neo-card p-8 text-center">
                         <BookOpen className="w-16 h-16 mx-auto text-neo-purple mb-4" />
                         <h1 className="text-2xl font-bold mb-4">No Flashcards Yet</h1>
-                        <p className="text-neo-black/70 mb-2">
-                            You need to generate practice questions first.
+                        <p className="text-neo-black/70 mb-6">
+                            Generate practice questions from your documents to create flashcards.
                         </p>
-                        <p className="text-sm text-neo-black/50 mb-6">
-                            1. Go to Dashboard → Click "Study" on a document<br/>
-                            2. Click "Practice" button to generate questions<br/>
-                            3. Then return here to review flashcards
-                        </p>
-                        <Link href="/dashboard" className="neo-btn neo-btn-purple">
-                            Go to Dashboard
-                        </Link>
+                        <button 
+                            onClick={generateQuestions} 
+                            disabled={generating}
+                            className="neo-btn neo-btn-purple"
+                        >
+                            {generating ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Sparkles className="w-4 h-4" />
+                            )}
+                            {generating ? "Generating..." : "Generate Flashcards"}
+                        </button>
                     </div>
                 </div>
             </div>

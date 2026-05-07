@@ -16,7 +16,9 @@ import {
     AlertCircle,
     Brain,
     BookOpen,
-    Upload
+    Upload,
+    Sparkles,
+    Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { ExportButton } from "@/components/ExportButton";
@@ -57,6 +59,8 @@ export default function QuizPage() {
         difficulty: "mixed", // beginner, intermediate, advanced, mixed
         timePerQuestion: TIME_PER_QUESTION,
     });
+    const [documents, setDocuments] = useState<{id: string, name: string}[]>([]);
+    const [generating, setGenerating] = useState(false);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -75,6 +79,7 @@ export default function QuizPage() {
     }, [quizState, timeLeft]);
 
     const fetchQuestions = async () => {
+        setLoading(true);
         try {
             const res = await fetch(`/api/flashcards?limit=${quizConfig.questionCount}`);
             if (res.ok) {
@@ -92,23 +97,54 @@ export default function QuizPage() {
         } catch (error) {
             console.error("Failed to fetch questions:", error);
             setQuestions([]);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Initial load to check if questions exist
+    // Initial load to check if questions exist and fetch documents
     useEffect(() => {
         if (status === "authenticated") {
-            fetch(`/api/flashcards?limit=1`)
-                .then(res => res.ok ? res.json() : { flashcards: [] })
-                .then(data => {
-                    if (!data.flashcards || data.flashcards.length === 0) {
-                        setQuestions([]);
-                    }
-                })
-                .catch(() => setQuestions([]))
-                .finally(() => setLoading(false));
+            fetchQuestions();
+            fetchDocuments();
         }
     }, [status]);
+
+    const fetchDocuments = async () => {
+        try {
+            const res = await fetch('/api/files');
+            if (res.ok) {
+                const data = await res.json();
+                setDocuments(data.documents || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch documents:", error);
+        }
+    };
+
+    const generateQuestions = async () => {
+        if (documents.length === 0) return;
+        setGenerating(true);
+        try {
+            // Generate for the first document
+            const doc = documents[0];
+            const res = await fetch('/api/practice/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    documentId: doc.id, 
+                    count: quizConfig.questionCount 
+                }),
+            });
+            if (res.ok) {
+                await fetchQuestions();
+            }
+        } catch (error) {
+            console.error("Failed to generate questions:", error);
+        } finally {
+            setGenerating(false);
+        }
+    };
 
     const generateOptions = (correctAnswer: string, allQuestions: QuizQuestion[]): string[] => {
         const options = [correctAnswer];
@@ -224,7 +260,7 @@ export default function QuizPage() {
         );
     }
 
-    // No questions available state
+    // No questions available state (during quiz)
     if (quizState === "running" && questions.length === 0) {
         return (
             <div className="min-h-screen pt-24 pb-12 px-4">
@@ -232,19 +268,32 @@ export default function QuizPage() {
                     <div className="neo-card p-8 text-center">
                         <BookOpen className="w-16 h-16 mx-auto text-neo-purple mb-4" />
                         <h1 className="text-2xl font-bold mb-4">No Questions Available</h1>
-                        <p className="text-neo-black/70 mb-2">
-                            You need to generate practice questions first.
-                        </p>
-                        <p className="text-sm text-neo-black/50 mb-6">
-                            1. Go to Dashboard → Click "Study" on a document<br/>
-                            2. Click "Practice" button to generate questions<br/>
-                            3. Then return here to take the quiz
+                        <p className="text-neo-black/70 mb-6">
+                            {documents.length === 0 
+                                ? "Upload documents first to generate quiz questions."
+                                : "Generate practice questions to start the quiz."
+                            }
                         </p>
                         <div className="flex gap-4 justify-center">
-                            <Link href="/dashboard" className="neo-btn neo-btn-purple">
-                                <Upload className="w-4 h-4" />
-                                Go to Dashboard
-                            </Link>
+                            {documents.length > 0 ? (
+                                <button 
+                                    onClick={generateQuestions} 
+                                    disabled={generating}
+                                    className="neo-btn neo-btn-purple"
+                                >
+                                    {generating ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Sparkles className="w-4 h-4" />
+                                    )}
+                                    {generating ? "Generating..." : "Generate Questions"}
+                                </button>
+                            ) : (
+                                <Link href="/dashboard" className="neo-btn neo-btn-purple">
+                                    <Upload className="w-4 h-4" />
+                                    Upload Documents
+                                </Link>
+                            )}
                             <button onClick={() => setQuizState("idle")} className="neo-btn neo-btn-white">
                                 Go Back
                             </button>
@@ -256,14 +305,63 @@ export default function QuizPage() {
     }
 
     if (quizState === "idle") {
+        // No documents uploaded
+        if (documents.length === 0) {
+            return (
+                <div className="min-h-screen pt-24 pb-12 px-4">
+                    <div className="max-w-2xl mx-auto">
+                        <div className="neo-card p-8 text-center">
+                            <BookOpen className="w-16 h-16 mx-auto text-neo-purple mb-4" />
+                            <h1 className="text-2xl font-bold mb-4">No Documents Uploaded</h1>
+                            <p className="text-neo-black/70 mb-6">
+                                Upload documents to generate quiz questions.
+                            </p>
+                            <Link href="/dashboard" className="neo-btn neo-btn-purple">
+                                <Upload className="w-4 h-4" />
+                                Go to Dashboard
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // No questions generated yet
+        if (questions.length === 0 && !loading) {
+            return (
+                <div className="min-h-screen pt-24 pb-12 px-4">
+                    <div className="max-w-2xl mx-auto">
+                        <div className="neo-card p-8 text-center">
+                            <BookOpen className="w-16 h-16 mx-auto text-neo-purple mb-4" />
+                            <h1 className="text-2xl font-bold mb-4">No Quiz Questions Yet</h1>
+                            <p className="text-neo-black/70 mb-6">
+                                Generate practice questions from your documents to start a quiz.
+                            </p>
+                            <button 
+                                onClick={generateQuestions} 
+                                disabled={generating}
+                                className="neo-btn neo-btn-purple"
+                            >
+                                {generating ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Sparkles className="w-4 h-4" />
+                                )}
+                                {generating ? "Generating..." : "Generate Questions"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Normal idle state with config
         return (
             <div className="min-h-screen pt-24 pb-12 px-4">
                 <div className="max-w-2xl mx-auto">
                     <div className="neo-card p-8">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-12 h-12 bg-neo-purple flex items-center justify-center"
-                                style={{ border: '3px solid #1a1a1a', boxShadow: '3px 3px 0px #1a1a1a' }}
-                            >
+                            <div className="w-12 h-12 bg-neo-purple flex items-center justify-center border-[3px] border-neo-black shadow-[3px_3px_0px_#1a1a1a]">
                                 <Trophy className="w-6 h-6 text-white" />
                             </div>
                             <div>
@@ -275,12 +373,12 @@ export default function QuizPage() {
                         <div className="space-y-6 mb-8">
                             <div>
                                 <label className="block text-sm font-bold mb-2 uppercase tracking-wider">Questions</label>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 flex-wrap">
                                     {[5, 10, 15, 20].map(count => (
                                         <button
                                             key={count}
                                             onClick={() => setQuizConfig(prev => ({ ...prev, questionCount: count }))}
-                                            className={`neo-btn text-xs py-2 px-4 ${
+                                            className={`neo-btn text-xs py-2 px-4 whitespace-nowrap ${
                                                 quizConfig.questionCount === count ? 'neo-btn-purple' : 'neo-btn-white'
                                             }`}
                                         >
@@ -292,12 +390,12 @@ export default function QuizPage() {
 
                             <div>
                                 <label className="block text-sm font-bold mb-2 uppercase tracking-wider">Time Per Question</label>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 flex-wrap">
                                     {[30, 60, 90, 120].map(sec => (
                                         <button
                                             key={sec}
                                             onClick={() => setQuizConfig(prev => ({ ...prev, timePerQuestion: sec }))}
-                                            className={`neo-btn text-xs py-2 px-4 ${
+                                            className={`neo-btn text-xs py-2 px-4 whitespace-nowrap ${
                                                 quizConfig.timePerQuestion === sec ? 'neo-btn-blue' : 'neo-btn-white'
                                             }`}
                                         >
