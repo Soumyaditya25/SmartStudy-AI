@@ -61,6 +61,7 @@ export default function QuizPage() {
     });
     const [documents, setDocuments] = useState<{id: string, name: string}[]>([]);
     const [generating, setGenerating] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -123,24 +124,31 @@ export default function QuizPage() {
     };
 
     const generateQuestions = async () => {
-        if (documents.length === 0) return;
+        if (documents.length === 0) {
+            setError("No documents available");
+            return;
+        }
         setGenerating(true);
+        setError(null);
         try {
-            // Generate for the first document
             const doc = documents[0];
             const res = await fetch('/api/practice/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     documentId: doc.id, 
-                    count: quizConfig.questionCount 
+                    count: Math.min(quizConfig.questionCount, 5)
                 }),
             });
+            const data = await res.json();
             if (res.ok) {
                 await fetchQuestions();
+            } else {
+                setError(data.error || "Failed to generate questions");
             }
-        } catch (error) {
-            console.error("Failed to generate questions:", error);
+        } catch (err: any) {
+            console.error("Failed to generate questions:", err);
+            setError(err.message || "Network error");
         } finally {
             setGenerating(false);
         }
@@ -337,6 +345,11 @@ export default function QuizPage() {
                             <p className="text-neo-black/70 mb-6">
                                 Generate practice questions from your documents to start a quiz.
                             </p>
+                            {error && (
+                                <div className="mb-4 p-3 bg-neo-coral/20 border-[2px] border-neo-coral text-sm">
+                                    Error: {error}
+                                </div>
+                            )}
                             <button 
                                 onClick={generateQuestions} 
                                 disabled={generating}

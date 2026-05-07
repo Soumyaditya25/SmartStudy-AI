@@ -164,21 +164,21 @@ export default function DashboardPage() {
         >
             {/* Header */}
             <header className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
+                <div className="flex-shrink-0">
                     <h1 className="text-3xl font-extrabold mb-1 tracking-tight">Dashboard</h1>
                     <p className="text-neo-black/50 font-medium">Upload documents and start studying.</p>
                 </div>
-                <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+                <div className="flex items-center gap-3">
                     <Link 
                         href="/quiz" 
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-neo-coral text-neo-black font-bold text-xs uppercase tracking-wider border-[3px] border-neo-black shadow-[3px_3px_0px_0px_#1a1a1a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_#1a1a1a] transition-all whitespace-nowrap"
+                        className="neo-btn neo-btn-coral h-10"
                     >
                         <Trophy className="w-4 h-4" />
                         Quiz
                     </Link>
                     <Link 
                         href="/flashcards" 
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-neo-yellow text-neo-black font-bold text-xs uppercase tracking-wider border-[3px] border-neo-black shadow-[3px_3px_0px_0px_#1a1a1a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_#1a1a1a] transition-all whitespace-nowrap"
+                        className="neo-btn neo-btn-yellow h-10"
                     >
                         <Layers className="w-4 h-4" />
                         Flashcards
