@@ -10,9 +10,12 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const docId = searchParams.get('docId');
 
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + 5); // 5-minute buffer
+
         const where: any = {
             userId: session.user.id,
-            nextReview: { lte: new Date() } // Only due cards
+            nextReview: { lte: now } // Only due cards
         };
 
         if (docId) {
