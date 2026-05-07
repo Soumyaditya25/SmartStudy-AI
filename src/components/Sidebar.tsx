@@ -13,6 +13,9 @@ export function Sidebar() {
 
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { name: "Flashcards", href: "/flashcards", icon: BookOpen },
+        { name: "Quizzes", href: "/quizzes", icon: Brain },
+        { name: "Study Plans", href: "/study-plans", icon: LayoutDashboard },
     ];
 
     const handleNewChat = async () => {

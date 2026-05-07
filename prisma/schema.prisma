@@ -27,6 +27,9 @@ model User {
   studySessions StudySession[]
   practiceQs    PracticeQuestion[]
   chunks        Chunk[]
+  flashcards    Flashcard[]
+  quizzes       Quiz[]
+  quizAttempts  QuizAttempt[]
 }
 
 model Account {
@@ -76,6 +79,8 @@ model Document {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   practiceQs    PracticeQuestion[]
   chunks        Chunk[]
+  flashcards    Flashcard[]
+  quizzes       Quiz[]
   
   @@index([userId])
 }
@@ -125,4 +130,72 @@ model PracticeQuestion {
 
   @@index([userId])
   @@index([documentId])
+}
+
+model Flashcard {
+  id            String    @id @default(cuid())
+  userId        String
+  documentId    String
+  front         String
+  back          String
+  // SM-2 Spaced Repetition fields
+  nextReview    DateTime  @default(now())
+  interval      Int       @default(0)   // in days
+  easeFactor    Float     @default(2.5) // starting ease factor
+  repetitions   Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([documentId])
+  @@index([userId, nextReview]) // Efficient querying for due cards
+}
+
+model Quiz {
+  id            String    @id @default(cuid())
+  userId        String
+  documentId    String
+  title         String
+  timeLimit     Int?      // in seconds, null if no timer
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  questions     QuizQuestion[]
+  attempts      QuizAttempt[]
+
+  @@index([userId])
+  @@index([documentId])
+}
+
+model QuizQuestion {
+  id            String    @id @default(cuid())
+  quizId        String
+  question      String
+  options       String    // Stored as JSON string ["A", "B", "C", "D"]
+  correctOption Int       // 0, 1, 2, or 3
+  explanation   String
+  
+  quiz          Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+model QuizAttempt {
+  id            String    @id @default(cuid())
+  quizId        String
+  userId        String
+  score         Int       // Number of correct answers
+  timeSpent     Int       // Time spent in seconds
+  createdAt     DateTime  @default(now())
+
+  quiz          Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@index([userId])
 }

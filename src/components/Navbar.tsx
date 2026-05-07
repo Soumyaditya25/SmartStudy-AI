@@ -3,10 +3,17 @@
 import Link from 'next/link';
 import { Brain, Sparkles, User, LogOut, LayoutDashboard } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 
 export function Navbar() {
     const { data: session, status } = useSession();
     const isAuthenticated = status === 'authenticated';
+    const pathname = usePathname();
+
+    // Hide global navbar on app routes because they use the Sidebar
+    if (pathname?.startsWith('/dashboard') || pathname?.startsWith('/study') || pathname?.startsWith('/flashcards') || pathname?.startsWith('/quizzes') || pathname?.startsWith('/study-plans')) {
+        return null;
+    }
 
     return (
         <nav 
