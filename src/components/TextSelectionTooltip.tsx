@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Sparkles, X, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { usePathname } from "next/navigation";
 
 interface TooltipPosition {
     x: number;
@@ -10,13 +11,18 @@ interface TooltipPosition {
 }
 
 export function TextSelectionTooltip() {
+    const pathname = usePathname();
     const [selectedText, setSelectedText] = useState("");
     const [position, setPosition] = useState<TooltipPosition | null>(null);
     const [showExplanation, setShowExplanation] = useState(false);
     const [explanation, setExplanation] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Only allow tooltip in active study sessions, not dashboards or study-plans
+    const isStudySession = pathname?.startsWith('/study/') && !pathname?.startsWith('/study-plans');
+
     const handleSelection = useCallback(() => {
+        if (!isStudySession) return;
         const selection = window.getSelection();
         const text = selection?.toString().trim();
 
@@ -36,9 +42,11 @@ export function TextSelectionTooltip() {
                 setPosition(null);
             }
         }
-    }, [showExplanation]);
+    }, [showExplanation, isStudySession]);
 
     useEffect(() => {
+        if (!isStudySession) return;
+        
         document.addEventListener("selectionchange", handleSelection);
         document.addEventListener("mouseup", handleSelection);
 
@@ -46,7 +54,7 @@ export function TextSelectionTooltip() {
             document.removeEventListener("selectionchange", handleSelection);
             document.removeEventListener("mouseup", handleSelection);
         };
-    }, [handleSelection]);
+    }, [handleSelection, isStudySession]);
 
     const handleExplain = async () => {
         if (!selectedText) return;
