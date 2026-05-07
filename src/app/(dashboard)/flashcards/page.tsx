@@ -146,9 +146,15 @@ export default function FlashcardsPage() {
                     </div>
                     <h2 className="text-2xl font-bold mb-2">You&apos;re all caught up!</h2>
                     <p className="text-neo-black/70 mb-6 font-medium">No more due flashcards for {selectedDocId ? 'this document' : 'any documents'}.</p>
-                    <button onClick={fetchDueCards} className="neo-btn neo-btn-white">
-                        <RotateCcw className="w-4 h-4" /> Check Again
-                    </button>
+                    <div className="flex gap-4">
+                        <button onClick={fetchDueCards} disabled={loading} className="neo-btn neo-btn-white">
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                            {loading ? "Checking..." : "Refresh"}
+                        </button>
+                        <Link href="/dashboard" className="neo-btn neo-btn-blue">
+                            Back to Dashboard
+                        </Link>
+                    </div>
                 </div>
             ) : !loading && currentCard ? (
                 <div className="flex-1 flex flex-col items-center max-w-2xl mx-auto w-full">
@@ -189,12 +195,8 @@ export default function FlashcardsPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 w-full"
+                                className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 w-full"
                             >
-                                <button onClick={() => handleReview(1)} className="neo-btn bg-neo-coral hover:bg-red-500 text-white flex-col gap-1 py-3">
-                                    <span className="font-bold">Again</span>
-                                    <span className="text-[10px] opacity-80">Forgot</span>
-                                </button>
                                 <button onClick={() => handleReview(3)} className="neo-btn bg-orange-400 hover:bg-orange-500 text-white flex-col gap-1 py-3">
                                     <span className="font-bold">Hard</span>
                                     <span className="text-[10px] opacity-80">Recalled with effort</span>

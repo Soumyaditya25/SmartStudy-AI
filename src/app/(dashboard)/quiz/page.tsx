@@ -71,7 +71,7 @@ export default function QuizzesDashboard() {
             });
             if (res.ok) {
                 const data = await res.json();
-                router.push(`/quizzes/${data.quiz.id}`);
+                router.push(`/quiz/${data.quiz.id}`);
             } else {
                 const err = await res.json();
                 alert(err.error || "Failed to generate quiz");
@@ -161,7 +161,7 @@ export default function QuizzesDashboard() {
                             </div>
                             
                             <div className="mt-auto">
-                                <Link href={`/quizzes/${quiz.id}`} className="neo-btn neo-btn-white w-full text-center block">
+                                <Link href={`/quiz/${quiz.id}`} className="neo-btn neo-btn-white w-full text-center block">
                                     {lastAttempt ? "Retake Quiz" : "Start Quiz"}
                                 </Link>
                             </div>

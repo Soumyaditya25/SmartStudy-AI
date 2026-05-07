@@ -128,7 +128,7 @@ export default function ActiveQuizPage({ params }: { params: Promise<{ id: strin
                     </div>
                     
                     <div className="flex justify-center gap-4">
-                        <Link href="/quizzes" className="neo-btn neo-btn-white">
+                        <Link href="/quiz" className="neo-btn neo-btn-white">
                             Back to Quizzes
                         </Link>
                         <button onClick={() => window.location.reload()} className="neo-btn neo-btn-blue">
@@ -189,7 +189,7 @@ export default function ActiveQuizPage({ params }: { params: Promise<{ id: strin
             {/* Quiz Header */}
             <header className="h-16 px-6 flex items-center justify-between bg-neo-bg" style={{ borderBottom: '3px solid #1a1a1a' }}>
                 <div className="flex items-center gap-4">
-                    <Link href="/quizzes" className="w-8 h-8 flex items-center justify-center hover:bg-neo-bg-dark transition-colors" style={{ border: '2px solid #1a1a1a' }}>
+                    <Link href="/quiz" className="w-8 h-8 flex items-center justify-center hover:bg-neo-bg-dark transition-colors" style={{ border: '2px solid #1a1a1a' }}>
                         <X className="w-4 h-4" />
                     </Link>
                     <h1 className="font-bold truncate max-w-[200px] sm:max-w-md">{quiz.title}</h1>

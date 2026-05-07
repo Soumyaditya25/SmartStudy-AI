@@ -11,7 +11,7 @@ export function Navbar() {
     const pathname = usePathname();
 
     // Hide global navbar on app routes because they use the Sidebar
-    if (pathname?.startsWith('/dashboard') || pathname?.startsWith('/study') || pathname?.startsWith('/flashcards') || pathname?.startsWith('/quizzes') || pathname?.startsWith('/study-plans')) {
+    if (pathname?.startsWith('/dashboard') || pathname?.startsWith('/study') || pathname?.startsWith('/flashcards') || pathname?.startsWith('/quiz') || pathname?.startsWith('/study-plans')) {
         return null;
     }
 
