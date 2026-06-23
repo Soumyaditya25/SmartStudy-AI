@@ -8,6 +8,9 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
+    // url is required by prisma db push / migrate CLI commands
+    url: process.env.DATABASE_URL ?? "",
+    // adapter is used by the runtime PrismaClient for pooled connections
     adapter: () => {
       const pool = new Pool({
         connectionString: process.env.DATABASE_URL,
