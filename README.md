@@ -1,128 +1,128 @@
 # SmartStudy AI
 
-An AI-powered study companion that helps students upload notes/textbooks and receive accurate, level-adjusted explanations, step-by-step solutions, practice questions, flashcards, and quizzes using Retrieval-Augmented Generation (RAG).
+> An AI-powered study companion that helps students upload notes and textbooks, then receive grounded explanations, step-by-step solutions, practice questions, flashcards, and quizzes — all powered by RAG (Retrieval-Augmented Generation).
+
+🔗 **Live Demo**: [smart-study-ai-blush.vercel.app](https://smart-study-ai-blush.vercel.app)
+
+---
 
 ## Features
 
-- **Document Ingestion**: Upload PDFs and TXT files, automatically processed with semantic chunking and zero-cost local embeddings.
-- **Grounded Q&A (RAG)**: Ask questions and receive answers grounded strictly in your uploaded materials.
-- **Multi-Provider AI Fallback**: Groq as the fast, primary provider, with Google Gemini as an automatic fallback.
-- **Comprehension Levels**: Choose from beginner, intermediate, or advanced explanations.
-- **Practice Questions**: Generate questions with mixed difficulty from your documents.
-- **Flashcards**: AI-generated flashcards with SM-2 spaced repetition scheduling.
-- **Quizzes**: Timed multiple-choice quizzes with scoring and explanations.
-- **Study Sessions**: Persistent chat sessions with full conversation history.
-- **Neo-Brutalist Design**: Bold, modern UI with a distinctive visual style.
+- **Document Ingestion** — Upload PDFs and TXT files; content is chunked, embedded, and stored in the database instantly
+- **Grounded Q&A (RAG)** — Ask questions and get answers grounded strictly in your uploaded materials, with source citations
+- **AI Streaming Chat** — Real-time streamed responses via Groq (primary) and Google Gemini (fallback)
+- **Comprehension Levels** — Choose beginner, intermediate, or advanced explanations
+- **AI Explanations** — Select any text on the page and get an instant contextual explanation
+- **Practice Questions** — Auto-generated questions with difficulty levels and step-by-step solutions
+- **Flashcards** — AI-generated flashcards with SM-2 spaced repetition scheduling
+- **Quizzes** — Timed multiple-choice quizzes with per-question explanations and scoring
+- **Study Sessions** — Persistent chat sessions with full conversation history
+- **Neo-Brutalist UI** — Bold, modern design with micro-animations
+
+---
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router), React 19, TypeScript
-- **Styling**: Tailwind CSS 4
-- **Database**: PostgreSQL (via [Neon](https://neon.tech)) with Prisma ORM
-- **Auth**: NextAuth.js v5 — Credentials-based with bcrypt
-- **AI**: Groq (Llama 3.3 70B), Google Gemini (fallback)
-- **Embeddings**: `@xenova/transformers` (all-MiniLM-L6-v2) — runs server-side
-- **Deployment**: [Vercel](https://vercel.com) (free tier)
+| Layer | Technology |
+|---|---|
+| **Framework** | Next.js 16 (App Router), React 19, TypeScript |
+| **Styling** | Tailwind CSS 4, Framer Motion |
+| **Database** | PostgreSQL via [Neon](https://neon.tech) (free serverless) + Prisma ORM 7 |
+| **Auth** | NextAuth.js v5 — JWT sessions, bcrypt password hashing |
+| **AI — Chat** | Groq `llama-3.3-70b-versatile` (primary) → Google Gemini (fallback) |
+| **AI — Embeddings** | Google `text-embedding-004` API (free, serverless-compatible) |
+| **PDF Parsing** | `pdf2json` — in-memory, no disk I/O |
+---
+
+## Architecture
+
+```
+Upload → Buffer in memory → Extract text → Gemini embeddings → Store chunks in Neon DB
+  ↓
+Query → Gemini query embedding → Cosine similarity → Top-K chunks → Stream answer via Groq/Gemini
+```
+
+---
 
 ## Project Structure
 
 ```
 SmartStudyAI/
 ├── src/
-│   ├── app/                 # Next.js App Router
-│   │   ├── api/             # API Routes (backend)
-│   │   │   ├── auth/        # Authentication endpoints
-│   │   │   ├── files/       # Document upload & management
-│   │   │   ├── explain/     # AI explanation endpoint
-│   │   │   ├── query/       # RAG chat (streaming)
-│   │   │   ├── practice/    # Practice question generation
-│   │   │   ├── flashcards/  # Flashcard generation & review
-│   │   │   ├── quizzes/     # Quiz generation & attempts
-│   │   │   └── sessions/    # Study session management
-│   │   ├── auth/            # Login/Signup pages
-│   │   ├── dashboard/       # Document management UI
-│   │   ├── study/           # Chat & study interface
-│   │   └── page.tsx         # Landing page
-│   ├── components/          # Shared React components
-│   ├── lib/                 # Utilities (Prisma client, helpers)
-│   ├── auth.ts              # NextAuth configuration
-│   └── proxy.ts             # Middleware route protection
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth/          # NextAuth handlers + signup
+│   │   │   ├── files/         # Document list, upload, delete
+│   │   │   ├── explain/       # Text selection AI explanation
+│   │   │   ├── query/         # RAG streaming chat
+│   │   │   ├── practice/      # Practice question generation
+│   │   │   ├── flashcards/    # Flashcard CRUD + SM-2 review
+│   │   │   ├── quizzes/       # Quiz generation + attempts
+│   │   │   └── sessions/      # Study session management
+│   │   ├── auth/              # Login / Signup pages
+│   │   ├── (dashboard)/       # Document management UI
+│   │   ├── study/             # Chat interface
+│   │   └── page.tsx           # Landing page
+│   ├── components/            # Shared React components
+│   ├── lib/                   # Prisma client singleton
+│   ├── auth.ts                # NextAuth config
+│   └── proxy.ts               # Route protection middleware
 ├── prisma/
-│   ├── schema.prisma        # Database schema
-│   └── seed.ts              # Demo data seeder
-├── public/                  # Static assets
-└── vercel.json              # Vercel deployment config
+│   ├── schema.prisma          # Database schema (9 models)
+│   └── seed.ts                # Demo data seeder
+├── prisma.config.ts           # Prisma 7 config (url for CLI)
+├── vercel.json                # Vercel deployment config
+└── next.config.ts             # Next.js config
 ```
 
-## Getting Started
+---
+
+## Getting Started (Local Dev)
 
 ### Prerequisites
 
 - Node.js 22+
-- npm
-- A PostgreSQL database (free: [Neon](https://neon.tech))
-- Groq API key — [console.groq.com](https://console.groq.com/keys) (14,400 req/day free)
-- Google Generative AI API key — [aistudio.google.com](https://aistudio.google.com/app/apikey) (free)
+- A free PostgreSQL database from [Neon](https://neon.tech)
+- [Groq API key](https://console.groq.com/keys) — 14,400 free req/day
+- [Google AI Studio API key](https://aistudio.google.com/app/apikey) — free (used for both chat fallback and embeddings)
 
-### Installation
+### Setup
 
-1. Clone the repository:
 ```bash
+# 1. Clone
 git clone https://github.com/Soumyaditya25/SmartStudy-AI.git
 cd SmartStudy-AI
-```
 
-2. Install dependencies:
-```bash
+# 2. Install
 npm install
-```
 
-3. Set up environment variables — copy `.env.example` to `.env` and fill in values:
-```env
-DATABASE_URL=postgresql://user:password@ep-xxx.neon.tech/neondb?sslmode=require
-AUTH_SECRET=your_random_secret_here   # openssl rand -base64 32
-NEXTAUTH_URL=http://localhost:3000
-GOOGLE_GENERATIVE_AI_API_KEY=your_key
-GROQ_API_KEY=your_key
-NODE_ENV=development
-```
+# 3. Configure environment
+cp .env.example .env
+# Fill in your values (see .env.example)
 
-4. Push the database schema:
-```bash
+# 4. Push DB schema
 npx prisma db push
-```
 
-5. (Optional) Seed demo data:
-```bash
+# 5. (Optional) Seed demo data
 npm run seed
-```
 
-6. Run the development server:
-```bash
+# 6. Start dev server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Deployment (Vercel + Neon)
-
-This project is deployed on [Vercel](https://vercel.com) (free tier) with [Neon](https://neon.tech) as the free PostgreSQL host.
-
-### Steps
-1. Create a free PostgreSQL database on [neon.tech](https://neon.tech) and copy the connection string.
-2. Import the GitHub repo into [vercel.com](https://vercel.com).
-3. Add the following environment variables in Vercel's dashboard:
+### Environment Variables
 
 | Variable | Description |
 |---|---|
-| `DATABASE_URL` | Neon PostgreSQL connection string |
-| `AUTH_SECRET` | Random secret (`openssl rand -base64 32`) |
-| `NEXTAUTH_URL` | Your Vercel deployment URL |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Google AI Studio API key |
-| `GROQ_API_KEY` | Groq API key |
-| `NODE_ENV` | `production` |
+| `DATABASE_URL` | Neon PostgreSQL connection string (`?sslmode=require`) |
+| `AUTH_SECRET` | Random secret — `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | `http://localhost:3000` for dev, your Vercel URL for prod |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Used for chat (fallback) + all embeddings |
+| `GROQ_API_KEY` | Primary chat provider |
+| `NODE_ENV` | `development` or `production` |
 
-4. Deploy — Vercel will automatically run `prisma generate`, `prisma db push`, and `next build`.
 
 ## API Routes
 
@@ -131,30 +131,49 @@ This project is deployed on [Vercel](https://vercel.com) (free tier) with [Neon]
 | `/api/auth/signup` | POST | Create new account |
 | `/api/auth/[...nextauth]` | GET/POST | NextAuth handlers |
 | `/api/files` | GET | List user documents |
-| `/api/files/upload` | POST | Upload and process document |
-| `/api/files/[id]` | GET/DELETE | Get or delete document |
-| `/api/explain` | POST | AI concept explanation |
-| `/api/query` | POST | RAG chat (streaming) |
+| `/api/files/upload` | POST | Upload & process document (PDF/TXT) |
+| `/api/files/[id]` | DELETE | Delete document + chunks |
+| `/api/explain` | POST | AI explanation for selected text |
+| `/api/query` | POST | RAG chat with streaming response |
 | `/api/practice/generate` | POST | Generate practice questions |
 | `/api/flashcards` | GET/POST | List or generate flashcards |
 | `/api/quizzes` | GET/POST | List or generate quizzes |
 | `/api/sessions` | GET/POST | List/create study sessions |
 | `/api/sessions/[id]` | GET/PUT | Get/update session |
 
+---
+
+## Database Schema
+
+9 Prisma models: `User`, `Account`, `AuthSession`, `VerificationToken`, `Document`, `Chunk`, `StudySession`, `PracticeQuestion`, `Flashcard`, `Quiz`, `QuizQuestion`, `QuizAttempt`
+
+Key design decisions:
+- Embeddings stored as JSON strings in `Chunk.embedding` — no pgvector needed
+- Cosine similarity computed in-application for simplicity
+- SM-2 spaced repetition fields (`nextReview`, `interval`, `easeFactor`, `repetitions`) on `Flashcard`
+
+---
+
 ## Security
 
-- Route protection via Next.js middleware (authenticated users only for dashboard/study)
-- Password hashing with bcrypt
-- Document ownership verification on all file operations
-- Embeddings and RAG results scoped by `userId`
+- JWT session strategy (no DB session lookups on every request)
+- Middleware route protection — unauthenticated users redirected to login
+- bcrypt password hashing (cost factor 10)
+- All data queries scoped by `userId` — no cross-user data leakage
+- Document ownership verified before any file operation
+
+---
 
 ## Design System
 
-Neo-Brutalist design with:
-- Bold borders (3px solid #1a1a1a) and hard drop shadows
-- Accent palette: yellow `#FFE156`, pink `#FF6B9D`, teal `#4ECDC4`
-- Typography: Space Grotesk + JetBrains Mono
+Neo-Brutalist with:
+- **Borders**: 3px solid `#1a1a1a` + hard box-shadows
+- **Palette**: Yellow `#FFE156` · Pink `#FF6B9D` · Teal `#4ECDC4` · Coral `#FF6B6B`
+- **Typography**: Space Grotesk (headings/body) + JetBrains Mono (code/badges)
+- **Animations**: Framer Motion page transitions + CSS micro-animations
+
+---
 
 ## Author
 
-Soumyaditya — [github.com/Soumyaditya25](https://github.com/Soumyaditya25)
+**Soumyaditya** — [github.com/Soumyaditya25](https://github.com/Soumyaditya25)
