@@ -1,0 +1,28 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "functions": {
+    "src/app/api/files/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/explain/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/query/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/practice/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/flashcards/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/quizzes/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  }
+}
