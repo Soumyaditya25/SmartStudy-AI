@@ -2,22 +2,25 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 
-// ---- Embedding helpers ----
+// ---- Embedding via Google Gemini API (free, no model download) ----
+async function getGeminiEmbedding(text: string): Promise<number[]> {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (!apiKey) throw new Error('GOOGLE_GENERATIVE_AI_API_KEY not set');
 
-let embeddingPipeline: any = null;
-
-async function getLocalEmbedding(text: string): Promise<number[]> {
-    try {
-        if (!embeddingPipeline) {
-            const { pipeline } = await import('@xenova/transformers');
-            embeddingPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'models/text-embedding-004',
+                content: { parts: [{ text: text.slice(0, 2048) }] },
+            }),
         }
-        const result = await embeddingPipeline(text, { pooling: 'mean', normalize: true });
-        return Array.from(result.data);
-    } catch (error) {
-        console.warn('Local embedding failed:', error);
-        throw error;
-    }
+    );
+    if (!res.ok) throw new Error(`Gemini embedding failed: ${res.status}`);
+    const data = await res.json();
+    return data.embedding?.values ?? [];
 }
 
 function cosineSimilarity(A: number[], B: number[]) {
@@ -227,7 +230,7 @@ export async function POST(req: Request) {
         // 2. Score chunks
         let scoredChunks: any[] = [];
         try {
-            const queryEmbedding = await getLocalEmbedding(latestMessage.content);
+            const queryEmbedding = await getGeminiEmbedding(latestMessage.content);
             scoredChunks = chunks.map(chunk => {
                 const chunkVector = JSON.parse(chunk.embedding || '[]');
                 const score = chunkVector.length > 0 ? cosineSimilarity(queryEmbedding, chunkVector) : 0;

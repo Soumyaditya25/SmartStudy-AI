@@ -1,41 +1,45 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import fs from 'fs';
-import path from 'path';
 import PDFParser from 'pdf2json';
 import prisma from '@/lib/prisma';
 
-// Local embedding model - dynamic import to avoid bundler issues
-let embeddingPipeline: any = null;
+// ---- Embedding via Google Gemini API (free, no model download) ----
+async function getGeminiEmbeddings(texts: string[]): Promise<number[][]> {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (!apiKey) throw new Error('GOOGLE_GENERATIVE_AI_API_KEY not set');
 
-async function getLocalEmbeddings(texts: string[]): Promise<number[][]> {
-    try {
-        if (!embeddingPipeline) {
-            const { pipeline } = await import('@xenova/transformers');
-            embeddingPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    const embeddings: number[][] = [];
+    for (const text of texts) {
+        const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'models/text-embedding-004',
+                    content: { parts: [{ text: text.slice(0, 2048) }] },
+                }),
+            }
+        );
+        if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`Gemini embedding failed (${res.status}): ${err.slice(0, 200)}`);
         }
-        
-        const embeddings: number[][] = [];
-        for (const text of texts) {
-            const result = await embeddingPipeline(text, { pooling: 'mean', normalize: true });
-            embeddings.push(Array.from(result.data));
-        }
-        return embeddings;
-    } catch (error) {
-        console.warn('Local embedding generation failed:', error);
-        throw error;
+        const data = await res.json();
+        embeddings.push(data.embedding?.values ?? []);
     }
+    return embeddings;
 }
 
-// Helper to extract text from PDF using pdf2json
+// ---- Extract PDF text from a Buffer (no disk I/O needed) ----
 async function extractPdfText(buffer: Buffer): Promise<string> {
     return new Promise((resolve, reject) => {
         const pdfParser = new PDFParser();
-        
+
         pdfParser.on('pdfParser_dataError', (errData: any) => {
             reject(new Error(errData.parserError?.message || 'PDF parsing failed'));
         });
-        
+
         pdfParser.on('pdfParser_dataReady', (pdfData) => {
             let text = '';
             if (pdfData.Pages) {
@@ -44,10 +48,7 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
                         for (const textItem of page.Texts) {
                             if (textItem.R) {
                                 for (const r of textItem.R) {
-                                    if (r.T) {
-                                        // Decode URI-encoded text
-                                        text += decodeURIComponent(r.T) + ' ';
-                                    }
+                                    if (r.T) text += decodeURIComponent(r.T) + ' ';
                                 }
                             }
                         }
@@ -57,20 +58,14 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
             }
             resolve(text);
         });
-        
+
         pdfParser.parseBuffer(buffer);
     });
 }
 
-const ALLOWED_TYPES = [
-    'application/pdf',
-    'text/plain',
-];
-
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
-// Helper to chunk text
-function chunkText(text: string, maxTokens: number = 500, overlap: number = 100): string[] {
+function chunkText(text: string, maxTokens: number = 400, overlap: number = 50): string[] {
     const words = text.split(/\s+/);
     const chunks: string[] = [];
     let i = 0;
@@ -96,43 +91,35 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
-        // Validate file size
         if (file.size > MAX_FILE_SIZE) {
             return NextResponse.json({ error: 'File too large. Maximum size is 20MB.' }, { status: 400 });
         }
 
-        // Validate file type
         const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
         const isTxt = file.type === 'text/plain' || file.name.endsWith('.txt');
 
         if (!isPdf && !isTxt) {
-            return NextResponse.json({ error: 'Unsupported file type. Please upload PDF or TXT files.' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'Unsupported file type. Please upload PDF or TXT files.' },
+                { status: 400 }
+            );
         }
 
-        // 1. Save file locally
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-]/g, '_')}`;
-        const filePath = path.join(uploadDir, fileName);
+        // Read file into memory buffer — no disk I/O (Vercel is serverless/read-only FS)
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        fs.writeFileSync(filePath, buffer);
-
-        // 2. Create Document record
+        // Create Document record immediately
         const docRecord = await prisma.document.create({
             data: {
                 userId: session.user.id,
                 name: file.name,
                 status: 'processing',
-                storagePath: `/uploads/${fileName}`,
-            }
+                storagePath: `memory:${file.name}`, // No persistent storage — content lives in DB chunks
+            },
         });
 
-        // 3. Process Text
+        // Extract text
         let textContent = '';
         if (isPdf) {
             textContent = await extractPdfText(buffer);
@@ -140,7 +127,6 @@ export async function POST(req: Request) {
             textContent = buffer.toString('utf-8');
         }
 
-        // 4. Chunk & Embed
         if (!textContent.trim()) {
             await prisma.document.update({ where: { id: docRecord.id }, data: { status: 'failed' } });
             return NextResponse.json({ error: 'No text could be extracted from the file' }, { status: 400 });
@@ -148,59 +134,54 @@ export async function POST(req: Request) {
 
         const chunks = chunkText(textContent, 400, 50);
 
-        // Get LOCAL embeddings (no API needed)
+        // Generate embeddings via Gemini API — no model download, instant, free
         let embeddings: number[][] = [];
-        
         try {
-            embeddings = await getLocalEmbeddings(chunks);
-            console.log(`Generated ${embeddings.length} embeddings locally`);
+            embeddings = await getGeminiEmbeddings(chunks);
+            console.log(`Generated ${embeddings.length} Gemini embeddings`);
         } catch (embedError) {
-            console.warn("Local embedding failed, storing without embeddings:", embedError);
+            console.warn('Gemini embedding failed, storing empty embeddings (keyword search will still work):', embedError);
             embeddings = chunks.map(() => []);
         }
 
         const userId = session.user.id;
-
-        // 5. Store chunks in SQLite
         const chunkRecords = chunks.map((chunk, index) => ({
             documentId: docRecord.id,
-            userId: userId,
+            userId,
             chunkIndex: index,
             content: chunk,
             embedding: JSON.stringify(embeddings[index] || []),
         }));
 
-        await prisma.chunk.createMany({
-            data: chunkRecords,
-        });
+        await prisma.chunk.createMany({ data: chunkRecords });
 
-        // Mark as ready (even if embeddings failed, we can still do keyword search)
         await prisma.document.update({ where: { id: docRecord.id }, data: { status: 'ready' } });
 
-        return NextResponse.json({
-            success: true,
-            documentId: docRecord.id,
-            name: file.name,
-            chunkCount: chunks.length,
-        }, { status: 201 });
-
+        return NextResponse.json(
+            {
+                success: true,
+                documentId: docRecord.id,
+                name: file.name,
+                chunkCount: chunks.length,
+            },
+            { status: 201 }
+        );
     } catch (error: any) {
-        console.error("Upload error:", error);
-        // Mark document as failed if we have a docRecord
+        console.error('Upload error:', error);
+        // Best-effort: mark the latest processing doc as failed
         try {
-            const docRecord = (await prisma.document.findFirst({ 
-                where: { userId: (await auth())?.user?.id }, 
-                orderBy: { createdAt: 'desc' }
-            }));
-            if (docRecord && docRecord.status === 'processing') {
-                await prisma.document.update({ 
-                    where: { id: docRecord.id }, 
-                    data: { status: 'failed' } 
+            const session = await auth();
+            if (session?.user?.id) {
+                const docRecord = await prisma.document.findFirst({
+                    where: { userId: session.user.id, status: 'processing' },
+                    orderBy: { createdAt: 'desc' },
                 });
+                if (docRecord) {
+                    await prisma.document.update({ where: { id: docRecord.id }, data: { status: 'failed' } });
+                }
             }
-        } catch (e) {
-            // Ignore cleanup errors
-        }
+        } catch (_) { /* ignore cleanup errors */ }
+
         return NextResponse.json({ error: error.message || 'Internal error during upload' }, { status: 500 });
     }
 }
