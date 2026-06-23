@@ -7,7 +7,7 @@ const prismaClientSingleton = () => {
   if (!connectionString) {
     throw new Error('DATABASE_URL environment variable is not set')
   }
-  // Railway PostgreSQL connections need SSL in production
+  // Use SSL in production (required by Neon and most hosted PostgreSQL)
   const pool = new Pool({
     connectionString,
     ssl: process.env.NODE_ENV === 'production'
